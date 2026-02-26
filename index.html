@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pricelist</title>
+    <title>Pricelist PDF Export - Grid Layout</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,9 @@
             --color-price: #004bc8;
             --color-badge: #8b3dff;
             --name-weight: 700;
-            /* Default Bold */
+            /* Column Width defaults */
+            --col-badge: 100px;
+            --col-price: 100px;
         }
 
         body {
@@ -48,20 +50,19 @@
         /* --- GRID SYSTEM SETUP --- */
 
         /* 1. Horizontal Layout (Parent UL) */
-        /* Defines 3 columns: Name, Badge, Price */
         .grid-layout-horizontal {
             display: grid;
-            grid-template-columns: 1fr 100px 100px;
+            /* Uses variables for dynamic width */
+            grid-template-columns: 1fr var(--col-badge) var(--col-price);
             column-gap: 1rem;
             width: 100%;
         }
 
         /* 2. Stacked Layout (Parent UL) */
-        /* Defines 2 columns: Name, Price-Block */
         .grid-layout-stacked {
             display: grid;
-            /* Column 2 is wider to fit the stacked price/badge */
-            grid-template-columns: 1fr 140px;
+            /* Uses the Price variable for the sidebar width */
+            grid-template-columns: 1fr var(--col-price);
             column-gap: 1rem;
             width: 100%;
         }
@@ -293,6 +294,28 @@
                     <input type="range" id="fontSizeSlider" min="10" max="24" step="0.5" value="14.5"
                         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                 </div>
+
+                <!-- Badge Column Slider -->
+                <div class="flex flex-col gap-2 lg:col-span-2 mt-6">
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Badge Col
+                            Width</span>
+                        <span id="badgeColDisplay" class="text-xs font-bold text-gray-400">100px</span>
+                    </div>
+                    <input type="range" id="badgeColSlider" min="0" max="200" step="5" value="100"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- Price Column Slider -->
+                <div class="flex flex-col gap-2 lg:col-span-2 mt-6">
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Price Col
+                            Width</span>
+                        <span id="priceColDisplay" class="text-xs font-bold text-gray-400">100px</span>
+                    </div>
+                    <input type="range" id="priceColSlider" min="80" max="250" step="5" value="100"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
             </div>
         </div>
     </div>
@@ -320,7 +343,9 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
             regexEnabled: true,
             layout: 'horizontal',
             fontSize: 14.5,
-            // New State Properties
+            // Layout dimensions
+            colBadge: 100,
+            colPrice: 100,
             fontFamily: "'Exo', sans-serif",
             nameWeight: 700,
             colors: {
@@ -329,7 +354,6 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                 badge: '#8b3dff'
             }
         };
-
         document.addEventListener("DOMContentLoaded", () => {
             fetchData();
             setupEventListeners();
@@ -410,6 +434,10 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
             root.style.setProperty('--color-badge', state.colors.badge);
             root.style.setProperty('--name-weight', state.nameWeight);
 
+            // 2. Update Column Variables
+            root.style.setProperty('--col-badge', `${state.colBadge}px`);
+            root.style.setProperty('--col-price', `${state.colPrice}px`);
+
             // 2. Handle Letter Spacing Override
             // If Helvetica, Arial, or Tahoma, add the class to remove spacing
             const tightFonts = ['Helvetica', 'Arial', 'Tahoma'];
@@ -421,6 +449,33 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                 body.classList.remove('font-no-spacing');
             }
         }
+
+        // Column Widths
+        const badgeSlider = document.getElementById('badgeColSlider');
+        const priceSlider = document.getElementById('priceColSlider');
+
+        badgeSlider.addEventListener('input', (e) => {
+            state.colBadge = e.target.value;
+            document.getElementById('badgeColDisplay').innerText = `${e.target.value}px`;
+            updateGlobalStyles();
+        });
+
+        priceSlider.addEventListener('input', (e) => {
+            state.colPrice = e.target.value;
+            document.getElementById('priceColDisplay').innerText = `${e.target.value}px`;
+            updateGlobalStyles();
+        });
+
+        // Logic to set initial Price slider value based on layout selection
+        document.getElementById('layoutSelect').addEventListener('change', (e) => {
+            // If switching to stacked, default price width usually needs to be wider
+            if (e.target.value === 'stacked' && state.colPrice < 140) {
+                state.colPrice = 140;
+                priceSlider.value = 140;
+                document.getElementById('priceColDisplay').innerText = `140px`;
+                updateGlobalStyles();
+            }
+        });
 
         async function fetchData() {
             try {
@@ -545,7 +600,7 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                             </div>
                             <div class="flex flex-col items-end leading-none text-right">
                                 ${priceHtml}
-                                <div class="text-[#666] font-[600] text-[13px] mt-[2px]">SRP: RM${item.srp.toLocaleString('en-MY')}</div>
+                                <div class="text-[#666] font-[600] text-[13px] mt-[2px] whitespace-nowrap">SRP: RM${item.srp.toLocaleString('en-MY')}</div>
                             </div>
                         `;
                     } else {
