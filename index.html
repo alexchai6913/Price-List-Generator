@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pricelist PDF Export - Grid Layout</title>
+    <title>Pricelist</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,7 +45,7 @@
             print-color-adjust: exact !important;
         }
 
-/* --- GRID SYSTEM SETUP --- */
+        /* --- GRID SYSTEM SETUP --- */
 
         /* 1. Horizontal Layout (Parent UL) */
         /* Defines 3 columns: Name, Badge, Price */
@@ -61,7 +61,7 @@
         .grid-layout-stacked {
             display: grid;
             /* Column 2 is wider to fit the stacked price/badge */
-            grid-template-columns: 1fr 140px; 
+            grid-template-columns: 1fr 140px;
             column-gap: 1rem;
             width: 100%;
         }
@@ -75,8 +75,10 @@
            columns the parent UL has defined (2 or 3) */
         .grid-row {
             display: grid;
-            grid-column: 1 / -1; /* Span all columns of parent */
-            grid-template-columns: subgrid; /* Snap to parent lines */
+            grid-column: 1 / -1;
+            /* Span all columns of parent */
+            grid-template-columns: subgrid;
+            /* Snap to parent lines */
             align-items: center;
         }
 
@@ -181,17 +183,6 @@
                 </p>
             </div>
 
-            <!-- Toggle Regex -->
-            <div class="flex flex-col gap-2 col-span-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Features</span>
-                <label
-                    class="flex items-center cursor-pointer gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 hover:bg-gray-100">
-                    <input type="checkbox" id="regexToggle"
-                        class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
-                    <span class="text-sm font-semibold">Extract Specs as Badges</span>
-                </label>
-            </div>
-
             <!-- Layout Selector -->
             <div class="flex flex-col gap-2  col-span-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Price Layout</span>
@@ -201,6 +192,35 @@
                     <option value="stacked">Stacked (Vertical Price)</option>
                 </select>
             </div>
+
+            <!-- Toggle Regex -->
+            <div class="flex flex-col gap-2 col-span-2">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Features</span>
+                <label
+                    class="flex items-center cursor-pointer gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 hover:bg-gray-100">
+                    <input type="checkbox" id="regexToggle"
+                        class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
+                    <span class="inline-flex items-center gap-2 text-sm font-semibold">
+                        Extract Specs as Badges
+
+                        <span
+                            class="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-[#8b3dff]/10 text-[#8b3dff] ring-1 ring-[#8b3dff]/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-sparkles">
+                                <path
+                                    d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                                <path d="M5 3v4" />
+                                <path d="M19 17v4" />
+                                <path d="M3 5h4" />
+                                <path d="M17 19h4" />
+                            </svg>
+                            Beta
+                        </span>
+                    </span>
+                </label>
+            </div>
+
 
             <!-- Appearance Controls -->
             <div class="col-span-1 md:col-span-2 lg:col-span-4 border-t border-gray-100 pt-4 mt-2">
