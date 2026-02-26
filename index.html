@@ -19,10 +19,24 @@
         rel="stylesheet">
 
     <style>
-        /* Base typography */
+        /* Base typography using CSS Variables */
+        :root {
+            --font-main: 'Exo', sans-serif;
+            --color-header: #5611AF;
+            --color-price: #004bc8;
+            --color-badge: #8b3dff;
+            --name-weight: 700;
+            /* Default Bold */
+        }
+
         body {
-            font-family: 'Exo', sans-serif;
+            font-family: var(--font-main);
             background-color: #f1f5f9;
+        }
+
+        /* Override for specific fonts to remove letter-spacing */
+        body.font-no-spacing * {
+            letter-spacing: 0px !important;
         }
 
         /* Force exact colors for printing */
@@ -31,41 +45,38 @@
             print-color-adjust: exact !important;
         }
 
-        /* --- GRID SYSTEM SETUP --- */
+/* --- GRID SYSTEM SETUP --- */
 
-        /* 1. Horizontal Layout: 3 Columns 
-           Col 1: Name (1fr)
-           Col 2: Badge (Auto - adapts to widest badge)
-           Col 3: Price (Min-content) 
-        */
-        /* 1. Horizontal Layout: 3 Columns */
+        /* 1. Horizontal Layout (Parent UL) */
+        /* Defines 3 columns: Name, Badge, Price */
         .grid-layout-horizontal {
             display: grid;
-
             grid-template-columns: 1fr 100px 100px;
-
             column-gap: 1rem;
+            width: 100%;
         }
 
-        /* 2. Stacked Layout: 2 Columns 
-           Col 1: Name (1fr)
-           Col 2: Price + Badge Stacked (Min-content)
-        */
+        /* 2. Stacked Layout (Parent UL) */
+        /* Defines 2 columns: Name, Price-Block */
         .grid-layout-stacked {
             display: grid;
-            grid-template-columns: 1fr max(102px, max-content);
+            /* Column 2 is wider to fit the stacked price/badge */
+            grid-template-columns: 1fr 140px; 
             column-gap: 1rem;
+            width: 100%;
         }
 
-        /* 3. The Row Item (Subgrid) 
-           This tells the LI to use the columns defined in the UL parent
-        */
+        .grid-layout-horizontal .save-badge {
+            width: 100%;
+        }
+
+        /* 3. The Row Item (Child LI using Subgrid) */
+        /* This works for BOTH layouts because it just fills whatever 
+           columns the parent UL has defined (2 or 3) */
         .grid-row {
             display: grid;
-            grid-column: 1 / -1;
-            /* Span all columns of parent */
-            grid-template-columns: subgrid;
-            /* Align to parent grid lines */
+            grid-column: 1 / -1; /* Span all columns of parent */
+            grid-template-columns: subgrid; /* Snap to parent lines */
             align-items: center;
         }
 
@@ -73,7 +84,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 5cm 1.5 2cm 1.5cm;
+                margin: 5cm 1.5cm 2cm 1.5cm;
             }
 
             body {
@@ -134,6 +145,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
             <!-- 1. NEW: URL Input Section (Spans full width) -->
             <!-- 1. URL Input Section -->
             <div class="col-span-1 md:col-span-2 lg:col-span-4 border-b border-gray-100 pb-4 mb-2">
@@ -170,18 +182,18 @@
             </div>
 
             <!-- Toggle Regex -->
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 col-span-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Features</span>
                 <label
                     class="flex items-center cursor-pointer gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 hover:bg-gray-100">
                     <input type="checkbox" id="regexToggle"
-                        class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                        class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
                     <span class="text-sm font-semibold">Extract Specs as Badges</span>
                 </label>
             </div>
 
             <!-- Layout Selector -->
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2  col-span-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Price Layout</span>
                 <select id="layoutSelect"
                     class="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-semibold">
@@ -190,15 +202,77 @@
                 </select>
             </div>
 
-            <!-- Font Size Slider -->
-            <div class="flex flex-col gap-2 lg:col-span-2">
-                <div class="flex justify-between">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Product Name Size</span>
-                    <span id="fontSizeDisplay"
-                        class="text-xs font-bold text-blue-600 bg-blue-50 px-2 rounded">14.5px</span>
+            <!-- Appearance Controls -->
+            <div class="col-span-1 md:col-span-2 lg:col-span-4 border-t border-gray-100 pt-4 mt-2">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-3">Appearance &
+                    Colors</span>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <!-- Font Family -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase">Font</label>
+                        <select id="fontSelect"
+                            class="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg p-2">
+                            <option value="'Exo', sans-serif">Exo (Default)</option>
+                            <option value="'Inter Tight', sans-serif">Inter Tight</option>
+                            <option value="Helvetica, sans-serif">Helvetica</option>
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="Tahoma, sans-serif">Tahoma</option>
+                        </select>
+                    </div>
+
+                    <!-- Name Weight -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase">Name Weight</label>
+                        <select id="weightSelect"
+                            class="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg p-2">
+                            <option value="700">Bold (Default)</option>
+                            <option value="800">Extra Bold</option>
+                            <option value="500">Medium</option>
+                            <option value="400">Regular</option>
+                        </select>
+                    </div>
+
+                    <!-- Header Color -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase">Header Color</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" id="colorHeader" value="#5611AF"
+                                class="h-8 w-10 p-0 border-0 rounded cursor-pointer">
+                            <span class="text-xs text-gray-500">Category</span>
+                        </div>
+                    </div>
+
+                    <!-- Price Color -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase">Price Color</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" id="colorPrice" value="#004bc8"
+                                class="h-8 w-10 p-0 border-0 rounded cursor-pointer">
+                            <span class="text-xs text-gray-500">Price</span>
+                        </div>
+                    </div>
+
+                    <!-- Badge Color -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase">Badge Color</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" id="colorBadge" value="#8b3dff"
+                                class="h-8 w-10 p-0 border-0 rounded cursor-pointer">
+                            <span class="text-xs text-gray-500">Save Tag</span>
+                        </div>
+                    </div>
                 </div>
-                <input type="range" id="fontSizeSlider" min="10" max="24" step="0.5" value="14.5"
-                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <!-- Font Size Slider -->
+                <div class="flex flex-col gap-2 lg:col-span-2 mt-8">
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Product Name Size</span>
+                        <span id="fontSizeDisplay"
+                            class="text-xs font-bold text-blue-600 bg-blue-50 px-2 rounded">14.5px</span>
+                    </div>
+                    <input type="range" id="fontSizeSlider" min="10" max="24" step="0.5" value="14.5"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
             </div>
         </div>
     </div>
@@ -223,9 +297,17 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
 
         let state = {
             data: [],
-            regexEnabled: true, // Default to true now
+            regexEnabled: true,
             layout: 'horizontal',
-            fontSize: 14.5
+            fontSize: 14.5,
+            // New State Properties
+            fontFamily: "'Exo', sans-serif",
+            nameWeight: 700,
+            colors: {
+                header: '#5611AF',
+                price: '#004bc8',
+                badge: '#8b3dff'
+            }
         };
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -234,6 +316,7 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
         });
 
         function setupEventListeners() {
+            // Existing Listeners
             document.getElementById('regexToggle').addEventListener('change', (e) => {
                 state.regexEnabled = e.target.checked;
                 render();
@@ -242,33 +325,85 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                 state.layout = e.target.value;
                 render();
             });
+
             const slider = document.getElementById('fontSizeSlider');
             const display = document.getElementById('fontSizeDisplay');
             slider.addEventListener('input', (e) => {
                 state.fontSize = e.target.value;
                 display.innerText = `${state.fontSize}px`;
+                // Font size update doesn't need full re-render, but render() is fast enough
                 render();
             });
-            // NEW: Load Button Listener
+
             document.getElementById('loadBtn').addEventListener('click', () => {
                 const inputUrl = document.getElementById('sheetUrl').value.trim();
                 if (!inputUrl) return alert("Please paste a URL first.");
-
                 const newApiUrl = convertToExportUrl(inputUrl);
                 if (newApiUrl) {
                     currentApiUrl = newApiUrl;
-                    document.getElementById('loading').classList.remove('hidden'); // Show loader
-                    document.getElementById('print-area').classList.add('hidden'); // Hide content
-                    fetchData(); // Reload
+                    document.getElementById('loading').classList.remove('hidden');
+                    document.getElementById('print-area').classList.add('hidden');
+                    fetchData();
                 } else {
-                    alert("Invalid Google Sheets URL. It must contain the Spreadsheet ID.");
+                    alert("Invalid Google Sheets URL.");
                 }
             });
+
+            // --- NEW APPEARANCE LISTENERS ---
+
+            // Font Family
+            document.getElementById('fontSelect').addEventListener('change', (e) => {
+                state.fontFamily = e.target.value;
+                updateGlobalStyles();
+            });
+
+            // Font Weight
+            document.getElementById('weightSelect').addEventListener('change', (e) => {
+                state.nameWeight = e.target.value;
+                updateGlobalStyles();
+            });
+
+            // Colors
+            document.getElementById('colorHeader').addEventListener('input', (e) => {
+                state.colors.header = e.target.value;
+                updateGlobalStyles();
+            });
+            document.getElementById('colorPrice').addEventListener('input', (e) => {
+                state.colors.price = e.target.value;
+                updateGlobalStyles();
+            });
+            document.getElementById('colorBadge').addEventListener('input', (e) => {
+                state.colors.badge = e.target.value;
+                updateGlobalStyles();
+            });
+        }
+
+        // Helper to update CSS variables without re-rendering HTML list
+        function updateGlobalStyles() {
+            const root = document.documentElement;
+            const body = document.body;
+
+            // 1. Update CSS Variables
+            root.style.setProperty('--font-main', state.fontFamily);
+            root.style.setProperty('--color-header', state.colors.header);
+            root.style.setProperty('--color-price', state.colors.price);
+            root.style.setProperty('--color-badge', state.colors.badge);
+            root.style.setProperty('--name-weight', state.nameWeight);
+
+            // 2. Handle Letter Spacing Override
+            // If Helvetica, Arial, or Tahoma, add the class to remove spacing
+            const tightFonts = ['Helvetica', 'Arial', 'Tahoma'];
+            const isTight = tightFonts.some(font => state.fontFamily.includes(font));
+
+            if (isTight) {
+                body.classList.add('font-no-spacing');
+            } else {
+                body.classList.remove('font-no-spacing');
+            }
         }
 
         async function fetchData() {
             try {
-                // CHANGE: API_URL -> currentApiUrl
                 const response = await fetch(currentApiUrl);
                 if (!response.ok) throw new Error("Network error");
                 parseData(await response.text());
@@ -280,9 +415,7 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
 
         function parseData(rawData) {
             Papa.parse(rawData, {
-                delimiter: "\t",
-                header: true,
-                skipEmptyLines: true,
+                delimiter: "\t", header: true, skipEmptyLines: true,
                 complete: function (results) {
                     state.data = results.data.map(row => {
                         const getVal = (key) => Object.values(row)[Object.keys(row).findIndex(k => k.trim() === key)] || "";
@@ -297,73 +430,35 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('print-area').classList.remove('hidden');
 
-                    // Set default checkbox state
-                    document.getElementById('regexToggle').checked = state.regexEnabled;
+                    // Initialize Styles
+                    updateGlobalStyles();
                     render();
                 }
             });
         }
 
-        /**
-         * Updated Regex Function
-         * 1. Matches comprehensive specs based on your list.
-         * 2. Returns original name UNTOUCHED.
-         */
         function extractFeatures(fullName, enableRegex) {
-            // 1. If Regex is off, return no badges, but keep the full name
             if (!enableRegex) return { name: fullName, features: [] };
-
-            // 2. The Comprehensive Regex
-            // We concatenate .source to build one large regex while keeping it readable
             const featureRegex = new RegExp(
-                // Group A: GHz Frequency (Handes ranges like 3.6~5.2GHz, 3.7-4.6GHz)
                 /(?:\b\d+(?:\.\d+)?\s*(?:[~-]\s*\d+(?:\.\d+)?)?\s*GHz\b)|/.source +
-
-                // Group B: Capacity/Power/Bus/Size (12GB, 650W, 128Bit, 53mm)
                 /(?:\b\d+(?:GB|TB|MB|W|Bit|mm)\b)|/.source +
-
-                // Group C: Tech Specs & Form Factors
                 /(?:\b(?:DDR\d|D[45]|GDDR\d+X?|E?ATX|mATX|ITX|SFX|WIFI[67E]?|ARGB|RGB|AIO|OC|Type-C|Gen\d+|LGA\d+|AM[45])\b)|/.source +
-
-                // Group D: PSU Ratings
                 /(?:80PLUS\s*(?:White|Bronze|Silver|Gold|Platinum|Titanium)?)|/.source +
-
-                // Group E: Colors
                 /(?:\b(?:White|Black|Silver|Red|Grey)\b)|/.source +
-
-                // Group F: Cores/Threads/Heatpipes (e.g., 4-Cores, 6-Heat Pipe)
                 /(?:\b\d+-(?:Cores|Threads|Heat\s*Pipe)\b)/.source,
-
-                "gi" // <--- Flags are here. Ensure there are no spaces (just "gi")
+                "gi"
             );
-
-            // 3. Extract matches
             const matches = fullName.match(featureRegex) || [];
-
-            // 4. Clean up matches (Uppercase, Remove duplicates, Remove internal spaces)
-            const uniqueFeatures = [...new Set(
-                matches.map(m => m.replace(/\s+/g, '').trim().toUpperCase())
-            )];
-
-            // 5. Return Original Name + Extracted Features
+            const uniqueFeatures = [...new Set(matches.map(m => m.replace(/\s+/g, '').trim().toUpperCase()))];
             return { name: fullName, features: uniqueFeatures };
         }
 
-        /**
- * Converts a standard Google Sheets URL to a TSV Export URL
- * Handles: /edit#gid=... or just the ID
- */
         function convertToExportUrl(url) {
-            // 1. Extract Spreadsheet ID (matches characters between /d/ and /)
             const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
             if (!idMatch) return null;
             const sheetId = idMatch[1];
-
-            // 2. Extract GID (Sheet Tab ID). Defaults to '0' (first tab) if not found.
-            // Matches "gid=123" in query params or hash
             const gidMatch = url.match(/[?#&]gid=([0-9]+)/);
             const gid = gidMatch ? gidMatch[1] : '0';
-
             return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=tsv&gid=${gid}`;
         }
 
@@ -382,17 +477,15 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
             sortedCategories.forEach(category => {
                 const items = grouped[category].sort((a, b) => a.product.localeCompare(b.product));
 
-                // Category Header
+                // UPDATED: Use CSS Variable for Color
                 const catHeader = document.createElement('h2');
-                catHeader.className = "text-[20px] font-[800] text-[#5611AF] uppercase mt-6 mb-2 break-inside-avoid tracking-wide";
+                catHeader.className = "text-[20px] font-[800] uppercase mt-6 mb-2 break-inside-avoid tracking-wide";
+                catHeader.style.color = "var(--color-header)"; // Dynamic Color
                 catHeader.innerText = category;
                 container.appendChild(catHeader);
 
-                // Main List Container (The Grid Parent)
                 const list = document.createElement('ul');
-                list.className = state.layout === 'horizontal'
-                    ? "grid-layout-horizontal w-full"
-                    : "grid-layout-stacked w-full";
+                list.className = state.layout === 'horizontal' ? "grid-layout-horizontal w-full" : "grid-layout-stacked w-full";
 
                 items.forEach(item => {
                     const { name, features } = extractFeatures(item.product, state.regexEnabled);
@@ -401,47 +494,45 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                     const li = document.createElement('li');
                     li.className = "grid-row border-b border-gray-200 py-3 break-inside-avoid";
 
-                    // Feature Badges
-                    // Limit to 4 badges max to prevent cluttering since we keep the full name
                     const displayFeatures = features.slice(0, 5);
-
                     const featuresHtml = displayFeatures.length > 0 ?
                         `<div class="mt-1 flex flex-wrap gap-1">` +
                         displayFeatures.map(f => `<span class="bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 text-[10px] rounded font-bold uppercase tracking-tight">${f}</span>`).join('') +
                         `</div>` : '';
 
-                    // 1. Name Column (Now contains FULL Name + Badges below it)
+                    // UPDATED: Name uses CSS Variable for Weight
                     const nameCol = `
                         <div class="flex flex-col justify-center">
-                            <h3 class="font-[700] text-[#222] leading-[1.2]" style="font-size: ${state.fontSize}px">${name}</h3>
+                            <h3 class="text-[#222] leading-[1.2]" style="font-size: ${state.fontSize}px; font-weight: var(--name-weight)">${name}</h3>
                             ${featuresHtml}
                         </div>
                     `;
 
-                    // Badge HTML (Common)
+                    // UPDATED: Badge uses CSS Variable for BG
                     const saveBadgeHtml = saveAmount > 0
-                        ? `<div class="bg-[#8b3dff] text-white text-[13px] font-bold px-3 py-[4px] rounded shadow-sm whitespace-nowrap leading-none inline-block text-center w-full">Save RM${saveAmount.toLocaleString('en-MY')}</div>`
+                        ? `<div style="background-color: var(--color-badge)" class="text-white text-[13px] font-bold px-3 py-[4px] rounded shadow-sm whitespace-nowrap leading-none inline-block text-center save-badge">Save RM${saveAmount.toLocaleString('en-MY')}</div>`
                         : '';
 
                     let remainingCols = '';
 
+                    // UPDATED: Price uses CSS Variable for Color
+                    const priceHtml = `<div style="color: var(--color-price)" class="font-[800] text-[24px] tracking-tighter">RM${item.promo.toLocaleString('en-MY')}</div>`;
+
                     if (state.layout === 'horizontal') {
-                        // --- Horizontal Grid Strategy ---
                         remainingCols = `
                             <div class="w-full text-right flex justify-end">
                                 ${saveAmount > 0 ? saveBadgeHtml : ''}
                             </div>
                             <div class="flex flex-col items-end leading-none text-right">
-                                <div class="text-[#004bc8] font-[800] text-[24px] tracking-tighter">RM${item.promo.toLocaleString('en-MY')}</div>
+                                ${priceHtml}
                                 <div class="text-[#666] font-[600] text-[13px] mt-[2px]">SRP: RM${item.srp.toLocaleString('en-MY')}</div>
                             </div>
                         `;
                     } else {
-                        // --- Stacked Grid Strategy ---
                         remainingCols = `
                             <div class="flex flex-col items-end justify-center text-right">
-                                <div class="text-[#004bc8] font-[800] text-[24px] leading-none tracking-tighter">RM${item.promo.toLocaleString('en-MY')}</div>
-                                <div class="text-[#666] font-[600] text-[13px] mt-[4px] leading-none">SRP: RM${item.srp.toLocaleString('en-MY')}</div>
+                                ${priceHtml}
+                                <div class="text-[#666] font-[600] text-[13px] mt-[-4px] leading-none">SRP: RM${item.srp.toLocaleString('en-MY')}</div>
                                 ${saveAmount > 0 ? `<div class="mt-1.5 w-full flex justify-end">${saveBadgeHtml}</div>` : ''}
                             </div>
                         `;
