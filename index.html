@@ -520,11 +520,26 @@ ASUS PRIME B760M-A WIFI D4	 790 	 579 	Mainboard (INTEL)`;
                 /(?:\b(?:DDR\d|D[45]|GDDR\d+X?|E?ATX|mATX|ITX|SFX|WIFI[67E]?|ARGB|RGB|AIO|OC|Type-C|Gen\d+|LGA\d+|AM[45])\b)|/.source +
                 /(?:80PLUS\s*(?:White|Bronze|Silver|Gold|Platinum|Titanium)?)|/.source +
                 /(?:\b(?:White|Black|Silver|Red|Grey)\b)|/.source +
-                /(?:\b\d+-(?:Cores|Threads|Heat\s*Pipe)\b)/.source,
+                /(?:\b\d+[- ]?(?:Cores|Threads|Heat\s*Pipes?)\b)/.source, // <-- Updated to catch spaces/hyphens
                 "gi"
             );
+
             const matches = fullName.match(featureRegex) || [];
-            const uniqueFeatures = [...new Set(matches.map(m => m.replace(/\s+/g, '').trim().toUpperCase()))];
+
+            // <-- Updated mapping to format the text beautifully
+            const uniqueFeatures = [...new Set(matches.map(m => {
+                let badge = m.toUpperCase().trim();
+
+                // Format to "4 HEATPIPE" (Preserves space)
+                if (badge.includes('HEAT')) return badge.replace(/[- ]*HEAT\s*PIPES?/, ' HEAT-PIPE');
+
+                // Format to "4-CORES" or "8-THREADS" (Preserves hyphen)
+                if (badge.includes('CORES') || badge.includes('THREADS')) return badge.replace(/[- ]+/, ' ');
+
+                // Default: remove all spaces (e.g. "8 GB" -> "8GB")
+                return badge.replace(/\s+/g, '');
+            }))];
+
             return { name: fullName, features: uniqueFeatures };
         }
 
